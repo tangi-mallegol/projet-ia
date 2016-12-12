@@ -5,11 +5,11 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
 sparql.setQuery("""
     PREFIX dbo: <http://dbpedia.org/ontology/>
-PREFIX dbpedia: <http://dbpedia.org/resource/>
-PREFIX dataset: <http://dbpedia.org/ontology/>
-PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
-PREFIX dbpprop: <http://dbpedia.org/property/>
+    PREFIX dbpedia: <http://dbpedia.org/resource/>
+    PREFIX dataset: <http://dbpedia.org/ontology/>
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
+    PREFIX dbpprop: <http://dbpedia.org/property/>
 
 select distinct ?prettyName ?property where {
   { select distinct ?property where {

@@ -7,26 +7,55 @@ Created on Mon Nov 28 09:29:48 2016
 
 from SPARQLWrapper import SPARQLWrapper, JSON
 import nltk
+import re
 
 sentences = [
     "Who is Daft Punk ?",
-    "Where did john lennon live ?"
+    "Where John Lennon lived ?"
 ]
-tokens = nltk.word_tokenize(sentence)
+tokens = nltk.word_tokenize(sentences[1])
 tagged = nltk.pos_tag(tokens)
 
 #dg = nltk.parse.parse_one(tokens)
 
-def get_tagged_word(tag, tagged_word):
-    for item in tagged_word:
-        if item[1] == tag:
-            return item[0]
+import_request = """
+    PREFIX dbo: <http://dbpedia.org/ontology/>
+    PREFIX dbpedia: <http://dbpedia.org/resource/>
+    PREFIX dataset: <http://dbpedia.org/ontology/>
+    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
+    PREFIX dbpprop: <http://dbpedia.org/property/>"""
 
-    return None
+def get_tagged_word(tag, tagged_word):
+    subjects = []
+    for item in tagged_word:
+        if re.search(tag + "*", item[1]) <> None:
+            subjects.append(item[0])
+            #return item[0]
+
+    return " ".join(subjects)
+
+def get_WP(tagged_word):
+    return get_tagged_word("WP", tagged_word)
+
+def get_subject(tagged_word):
+    return get_tagged_word("NN", tagged_word)
+
+def get_verb(tagged_word):
+    return get_tagged_word("VBZ", tagged_word)
+
+def do_request(subject):
+
+
+
+
+
 
 print tagged
 
-print get_tagged_word("WP", tagged)
+print get_WP(tagged)
+print get_subject(tagged)
+print get_verb(tagged)
 
 
 
