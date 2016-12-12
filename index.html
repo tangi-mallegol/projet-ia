@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+<script
+  src="https://code.jquery.com/jquery-2.2.4.min.js"
+  integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+  crossorigin="anonymous"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <style>
+        .starter-template {
+            margin-right : auto;
+            margin-left : auto;
+            text-align: center;
+            padding : 40px 15px;
+            max-width:700px;
+        }
+
+        .question {
+            text-align : left;
+            color : #CCC;
+        }
+
+        .reponse {
+            text-align : right;
+        }
+
+        .feed {
+            margin-top: 40px;
+        }
+    </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="starter-template">
+        <h1>Bootstrap starter template</h1>
+        <p class="lead">Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.</p>
+        <input type="text" name="question" value="" class="form-control" placeholder="Quelle est votre question ?">
+        <div class="feed">
+
+        </div>
+      </div>
+        </div>
+        <script>
+            var input = $("input[name='question']");
+            var feed = $(".feed");
+            input.on('keypress', function(e){
+                if(e.keyCode == 13){
+                    var question = input.val();
+                    var questionHTML = "<div class='question'><i>" + question + "</i></div>";
+                    feed.append(questionHTML);
+                    $.ajax({
+                        url : "/question",
+                        data : {
+                            question : question
+                        },
+                        type : "GET",
+                        success : function(data){
+                            var reponseHTML = "<div class='reponse'>" + data.reponse + "</div>";
+                            feed.append(reponseHTML);
+                        },
+                        error : function(a, b, c) {
+                            console.log(a,b,c)
+                            alert("Une erreur s'est produite lors du traitement de la question.");
+                        }
+                    })
+                }
+            });
+        </script>
+    </body>
+</html>

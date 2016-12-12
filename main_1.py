@@ -47,3 +47,30 @@ for result in results["results"]["bindings"]:
     #if result["r"]["value"] == "http://dbpedia.org/ontology/wikiPageRedirects":
         
         #print(result["p"]["value"])
+
+# PREFIX dataset: <http://dbpedia.org/ontology/>
+
+# PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+# SELECT ?name ?influencedBy
+# WHERE
+# {
+#   {
+#   ?uri a dataset:Philosopher  .
+#   ?uri dataset:influencedBy ?influencedBy   .
+#   ?uri dataset:birthPlace ?birthPlace   .
+#   ?uri foaf:name ?name   .
+#   filter regex(?birthPlace, 'France', 'i')   .
+#   filter regex(?influencedBy, 'Test Name 1', 'i')   .
+#   }
+#   UNION
+#   {
+#   ?uri a dataset:Philosopher  .
+#   ?uri dataset:influencedBy ?influencedBy   .
+#   ?uri dataset:birthPlace ?birthPlace   .
+#   ?uri foaf:name ?name   .
+#   filter regex(?birthPlace, 'France', 'i')   .
+#   filter regex(?influencedBy, 'Test Name 2', 'i')   .
+#   }
+# }
+# LIMIT  40
