@@ -8,12 +8,14 @@ Created on Mon Nov 28 09:29:48 2016
 from SPARQLWrapper import SPARQLWrapper, JSON
 import nltk
 import re
+import music
 
 sentences = [
     "Who is Daft Punk ?",
-    "Where John Lennon lived ?"
+    "Where John Lennon lived ?",
+    "What album did Pink Floyd produce ?"
 ]
-tokens = nltk.word_tokenize(sentences[1])
+tokens = nltk.word_tokenize(sentences[2])
 tagged = nltk.pos_tag(tokens)
 
 #dg = nltk.parse.parse_one(tokens)
@@ -44,18 +46,16 @@ def get_subject(tagged_word):
 def get_verb(tagged_word):
     return get_tagged_word("VBZ", tagged_word)
 
-def do_request(subject):
+def get_object(tagged_word):
+    return get_tagged_word("NNP", tagged_word)
 
 
-
-
-
-
-print tagged
-
-print get_WP(tagged)
-print get_subject(tagged)
-print get_verb(tagged)
+if __name__ == '__main__':
+    print tagged
+    print get_WP(tagged)
+    print get_subject(tagged)
+    print get_verb(tagged)
+    print get_object(tagged)
 
 
 

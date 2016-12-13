@@ -2,6 +2,14 @@
 
 import re
 
+def BuildRequest(query, sujet):
+    query = ""
+    artiste = Artiste()
+    band = Band()
+    chanteur = Chanteur()
+    auteur = Auteur()
+    memberof = Memberof()
+
 class Artiste:
     self.regex = re.compile('.*(artist).*')
 
@@ -15,7 +23,7 @@ class Band:
 
     def get_filter(query, sujet):
         if(self.regex.match(query)):
-            return ('?x <http://dbpedia.org/ontology/Band> ?band)', 'FILTER regex(?band, ".*' + sujet +'.*") ')
+            return ('?x <http://dbpedia.org/ontology/associatedBand> ?band)', 'FILTER regex(?band, ".*' + sujet +'.*") ')
         return ""
 
 class Chanteur:
@@ -23,7 +31,7 @@ class Chanteur:
 
     def get_filter(query, sujet):
         if(self.regex.match(query)):
-            return ('?x <http://dbpedia.org/ontology/Singer> ?singer', 'FILTER regex(?singer, ".*' + sujet +'.*") ')
+            return ('?x <http://dbpedia.org/ontology/singer> ?singer', 'FILTER regex(?singer, ".*' + sujet +'.*") ')
         return ""
 
 class Auteur:
@@ -31,5 +39,13 @@ class Auteur:
 
     def get_filter(query, sujet):
         if(self.regex.match(query)):
-            return ('?x <http://dbpedia.org/ontology/Author> ?author', 'FILTER regex(?author, ".*' + sujet +'.*") ')
+            return ('?x <http://dbpedia.org/ontology/author> ?author', 'FILTER regex(?author, ".*' + sujet +'.*") ')
+        return ""
+
+class Memberof:
+    self.regex = re.compiler('.*(member of)')
+
+    def get_filter(query, sujet):
+        if(self.regex.match(query)):
+            return ('?x <http://dbpedia.org/ontology/author> ?author', 'FILTER regex(?author, ".*' + sujet +'.*") ')
         return ""
