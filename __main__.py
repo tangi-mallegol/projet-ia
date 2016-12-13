@@ -15,8 +15,7 @@ sentences = [
     "Where John Lennon lived ?",
     "What album did Pink Floyd produce ?"
 ]
-tokens = nltk.word_tokenize(sentences[2])
-tagged = nltk.pos_tag(tokens)
+
 
 #dg = nltk.parse.parse_one(tokens)
 
@@ -51,11 +50,15 @@ def get_object(tagged_word):
 
 
 if __name__ == '__main__':
+    tokens = nltk.word_tokenize(sentences[2])
+    tagged = nltk.pos_tag(tokens)
     print tagged
     print get_WP(tagged)
     print get_subject(tagged)
     print get_verb(tagged)
     print get_object(tagged)
+    
+    
 
 
 

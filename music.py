@@ -70,3 +70,4 @@ class Memberof:
         if(self.regex.match(query)):
             return ('?x <http://dbpedia.org/ontology/formerBandMember> ?formerBandMember', 'FILTER regex(?formerBandMember, ".*' + sujet +'.*") ')
         return ""
+
