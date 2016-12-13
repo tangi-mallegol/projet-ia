@@ -1,7 +1,10 @@
 #!/usr/bin/python
 from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 import json
+import urllib
 from os import curdir, sep
+
+import IVHM
 
 PORT_NUMBER = 8080
 
@@ -22,10 +25,12 @@ class myHandler(BaseHTTPRequestHandler):
                 self.wfile.write(f.read())
                 f.close()
             elif url == "/question":
+                query = urllib.unquote_plus(self.path.split("question=")[1]).decode('utf8')
+                res = IVHM.build_client_res(query)
                 self.send_response(200)
                 self.send_header('Content-type', "application/json")
                 self.end_headers()
-                self.wfile.write(json.dumps({ "reponse" : "test" }))
+                self.wfile.write(json.dumps({ "reponse" : res }))
         except Exception as err:
             #self.send_error(500, "Une erreur serveur s'est produite'")
             self.send_error(500, err)

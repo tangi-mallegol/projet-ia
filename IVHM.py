@@ -13,9 +13,13 @@ import music
 sentences = [
     "Who is Daft Punk ?",
     "Where John Lennon lived ?",
+    "Who is Renaud ?",
     "What album did Pink Floyd produce ?"
 ]
+sparql_base_req = {}
 
+sparql_base_req['who'] = "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
+sparql_base_req['abstract'] = "select distinct ?data where {<%s> dbpedia-owl:abstract ?data filter (lang(?data) = '' || langMatches(lang(?data), 'en'))}"
 
 #dg = nltk.parse.parse_one(tokens)
 
@@ -27,14 +31,46 @@ import_request = """
     PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
     PREFIX dbpprop: <http://dbpedia.org/property/>"""
 
+def build_client_res(question):
+    tokens = nltk.word_tokenize(question)
+    tagged = nltk.pos_tag(tokens)
+
+    if get_WP(tagged).lower() == "who":
+        query = sparql_base_req['who'] % ('associatedBand', get_object(tagged))
+
+        results = send_sparql_query(query)
+
+        print results
+
+        if len(results) == 0:
+            query = sparql_base_req['who'] % ('musicalArtist', get_object(tagged))
+            results = send_sparql_query(query)
+
+        if len(results) == 0:
+            query = sparql_base_req['who'] % ('person', get_object(tagged))
+            results = send_sparql_query(query)
+
+
+        if len(results) > 0:
+            name = results[0]['name']['value'].split('/')[-1]
+            query = sparql_base_req['abstract'] % results[0]['name']['value']
+            results = send_sparql_query(query)
+            abstract = results[0]['data']['value'].split('.')[0] + ". "
+            #abstract = re.sub(r'[.*]', '', abstract)
+            info = '<a href="https://en.wikipedia.org/wiki/%s" target="_blank">More informations.</a>' % name
+            return abstract + info
+        return "Sorry, I don't know '" + get_object(tagged).replace(".*", " ") + "'."
+
+
+
 def get_tagged_word(tag, tagged_word):
     subjects = []
     for item in tagged_word:
-        if re.search(tag + "*", item[1]) <> None:
+        if re.search(tag + '$', item[1]):
             subjects.append(item[0])
             #return item[0]
 
-    return " ".join(subjects)
+    return ".*".join(subjects)
 
 def get_WP(tagged_word):
     return get_tagged_word("WP", tagged_word)
@@ -43,22 +79,21 @@ def get_subject(tagged_word):
     return get_tagged_word("NN", tagged_word)
 
 def get_verb(tagged_word):
-    return get_tagged_word("VBZ", tagged_word)
+    return get_tagged_word("VB", tagged_word)
 
 def get_object(tagged_word):
     return get_tagged_word("NNP", tagged_word)
 
+def send_sparql_query(query):
+    sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+    sparql.setQuery(import_request + query)
+    sparql.setReturnFormat(JSON)
+    res = sparql.query().convert()
+    return res['results']['bindings']
+
 
 if __name__ == '__main__':
-    tokens = nltk.word_tokenize(sentences[2])
-    tagged = nltk.pos_tag(tokens)
-    print tagged
-    print get_WP(tagged)
-    print get_subject(tagged)
-    print get_verb(tagged)
-    print get_object(tagged)
-    
-    
+    print build_client_res(sentences[2])
 
 
 
@@ -104,3 +139,5 @@ for result in results["results"]["bindings"]:
         #print(result["p"]["value"])
 
 """
+
+
