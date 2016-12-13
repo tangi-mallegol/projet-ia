@@ -16,7 +16,6 @@ sentences = [
     "Who is Renaud ?",
     "What album did Pink Floyd produce ?"
 ]
-
 sparql_base_req = {}
 
 sparql_base_req['who'] = "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
@@ -102,8 +101,6 @@ if __name__ == '__main__':
 
 
 
-
-
 """
 for element in tagged:
     
@@ -142,3 +139,5 @@ for result in results["results"]["bindings"]:
         #print(result["p"]["value"])
 
 """
+
+
