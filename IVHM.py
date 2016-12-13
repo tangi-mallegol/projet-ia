@@ -16,9 +16,20 @@ sentences = [
     "Who is Renaud ?",
     "What album did Pink Floyd produce ?"
 ]
-sparql_base_req = {}
+sparql_base_req = {
+    'who' : {
+        'member' : "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}",
+        'default' : "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
+    },
+    'where' : {
+        'born' : "select distinct ?born where {?x dbpedia:placeOfBirth ?born . ?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}",
+        'live' : "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
+    },
+    'what' : {
+        'album' : "select distinct ?album, ?albumName where { ?album a dbpedia-owl:Album . ?album rdfs:label ?albumName . ?album dbpedia-owl:artist dbpedia:%s. filter (lang(?albumName) = '' || langMatches(lang(?albumName), 'en'))}"
+    }
+}
 
-sparql_base_req['who'] = "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
 sparql_base_req['abstract'] = "select distinct ?data where {<%s> dbpedia-owl:abstract ?data filter (lang(?data) = '' || langMatches(lang(?data), 'en'))}"
 
 #dg = nltk.parse.parse_one(tokens)
@@ -34,33 +45,101 @@ import_request = """
 def build_client_res(question):
     tokens = nltk.word_tokenize(question)
     tagged = nltk.pos_tag(tokens)
-
+    print tagged
     if get_WP(tagged).lower() == "who":
-        query = sparql_base_req['who'] % ('associatedBand', get_object(tagged))
+        if get_subject(tagged) in sparql_base_req['who']:
 
+            query = sparql_base_req['who']['member'] % ('associatedBand', get_object(tagged))
+            return "Sorry, I don't know '" + get_object(tagged).replace(".*", " ") + "'."
+
+        else :
+
+            query = sparql_base_req['who']['default'] % ('associatedBand', get_object(tagged))
+            results = send_sparql_query(query)
+
+            print results
+
+            if len(results) == 0:
+                query = sparql_base_req['who']['default'] % ('musicalArtist', get_object(tagged))
+                results = send_sparql_query(query)
+
+            if len(results) == 0:
+                query = sparql_base_req['who']['default'] % ('person', get_object(tagged))
+                results = send_sparql_query(query)
+
+
+            if len(results) > 0:
+                name = results[0]['name']['value'].split('/')[-1]
+                query = sparql_base_req['abstract'] % results[0]['name']['value']
+                results = send_sparql_query(query)
+                abstract = results[0]['data']['value'].split('.')[0] + ". "
+                #abstract = re.sub(r'[.*]', '', abstract)
+                info = '<a href="https://en.wikipedia.org/wiki/%s" target="_blank">More informations.</a>' % name
+                return abstract + info
+            return "Sorry, I don't know '" + get_object(tagged).replace(".*", " ") + "'."
+    
+    if get_WP(tagged).lower() == "what":
+        
+        # On trouve le groupe
+        subject = get_subject(tagged)
+        object = get_object(tagged)
+        print subject, object
+        query = sparql_base_req['who']['default'] % ('associatedBand', object)
         results = send_sparql_query(query)
 
-        print results
-
         if len(results) == 0:
-            query = sparql_base_req['who'] % ('musicalArtist', get_object(tagged))
+            query = sparql_base_req['who']['default'] % ('musicalArtist', object)
             results = send_sparql_query(query)
 
         if len(results) == 0:
-            query = sparql_base_req['who'] % ('person', get_object(tagged))
+            query = sparql_base_req['who']['default'] % ('person', object)
             results = send_sparql_query(query)
-
-
-        if len(results) > 0:
-            name = results[0]['name']['value'].split('/')[-1]
-            query = sparql_base_req['abstract'] % results[0]['name']['value']
+            
+        print results[0]['name']['value']
+        name_object = results[0]['name']['value'].split('/')[-1]
+        print name_object, 'lel', subject, object
+        if sparql_base_req['what'][subject] != None:
+            print 'before'
+            query = sparql_base_req['what'][subject] % name_object
+            print 'after'
             results = send_sparql_query(query)
-            abstract = results[0]['data']['value'].split('.')[0] + ". "
-            #abstract = re.sub(r'[.*]', '', abstract)
-            info = '<a href="https://en.wikipedia.org/wiki/%s" target="_blank">More informations.</a>' % name
-            return abstract + info
-        return "Sorry, I don't know '" + get_object(tagged).replace(".*", " ") + "'."
+            print 'lel', query
+            if len(results) > 0:
+                result_html = []
+                for result in results:
+                    print result['albumName']['value']
+                    if not result['albumName']['value'] in result_html:
+                        result_html.append(result['albumName']['value'])
+                return "<br/>".join(result_html)
+            return "Sorry, I don't know '" + name_object.replace(".*", " ") + "'."
+        return "Sorry, I don't know '" + name_object.replace(".*", " ") + "'."
 
+
+    # if get_WP(tagged).lower() == "where":
+    #     query = sparql_base_req['where'] % ('associatedBand', get_object(tagged))
+
+    #     results = send_sparql_query(query)
+
+    #     print results
+
+    #     if len(results) == 0:
+    #         query = sparql_base_req['who'] % ('musicalArtist', get_object(tagged))
+    #         results = send_sparql_query(query)
+
+    #     if len(results) == 0:
+    #         query = sparql_base_req['who'] % ('person', get_object(tagged))
+    #         results = send_sparql_query(query)
+
+
+    #     if len(results) > 0:
+    #         name = results[0]['name']['value'].split('/')[-1]
+    #         query = sparql_base_req['abstract'] % results[0]['name']['value']
+    #         results = send_sparql_query(query)
+    #         abstract = results[0]['data']['value'].split('.')[0] + ". "
+    #         #abstract = re.sub(r'[.*]', '', abstract)
+    #         info = '<a href="https://en.wikipedia.org/wiki/%s" target="_blank">More informations.</a>' % name
+    #         return abstract + info
+    #     return "Sorry, I don't know '" + get_object(tagged).replace(".*", " ") + "'."
 
 
 def get_tagged_word(tag, tagged_word):
@@ -76,7 +155,7 @@ def get_WP(tagged_word):
     return get_tagged_word("WP", tagged_word)
 
 def get_subject(tagged_word):
-    return get_tagged_word("NN", tagged_word)
+    return get_tagged_word("(NN|NNS)", tagged_word)
 
 def get_verb(tagged_word):
     return get_tagged_word("VB", tagged_word)
