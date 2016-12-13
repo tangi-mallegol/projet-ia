@@ -1,4 +1,19 @@
 # coding: utf-8
+requete_exemple = """PREFIX dbpedia: <http://dbpedia.org/resource/>
+PREFIX dataset: <http://dbpedia.org/ontology/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dbpprop: <http://dbpedia.org/property/>
+PREFIX mo:  <http://purl.org/ontology/mo/>
+
+select ?name, ?member
+where {
+?x <http://dbpedia.org/ontology/associatedBand> ?name 
+Optional {
+?x <http://dbpedia.org/ontology/formerBandMember> ?member
+}
+FILTER(regex(?name, ".*Beatles.*"))
+
+}"""
 
 import re
 
@@ -9,9 +24,11 @@ def BuildRequest(query, sujet):
     chanteur = Chanteur()
     auteur = Auteur()
     memberof = Memberof()
+    
 
 class Artiste:
-    self.regex = re.compile('.*(artist).*')
+    def __init__():
+        self.regex = re.compile('.*(artist).*')
 
     def get_filter(query, sujet):
         if(self.regex.match(query)):
@@ -19,7 +36,8 @@ class Artiste:
         return ""
 
 class Band:
-    self.regex = re.compiler('.*(band|group).*')
+    def __init__():
+        self.regex = re.compiler('.*(band|group).*')
 
     def get_filter(query, sujet):
         if(self.regex.match(query)):
@@ -27,7 +45,8 @@ class Band:
         return ""
 
 class Chanteur:
-    self.regex = re.compiler('.*(singer).*')
+    def __init__():
+        self.regex = re.compiler('.*(singer).*')
 
     def get_filter(query, sujet):
         if(self.regex.match(query)):
@@ -35,7 +54,8 @@ class Chanteur:
         return ""
 
 class Auteur:
-    self.regex = re.compiler('.*(author).*')
+    def __init__():
+        self.regex = re.compiler('.*(author).*')
 
     def get_filter(query, sujet):
         if(self.regex.match(query)):
@@ -43,9 +63,10 @@ class Auteur:
         return ""
 
 class Memberof:
-    self.regex = re.compiler('.*(member of)')
+    def __init__():
+        self.regex = re.compiler('.*(member of).*')
 
     def get_filter(query, sujet):
         if(self.regex.match(query)):
-            return ('?x <http://dbpedia.org/ontology/author> ?author', 'FILTER regex(?author, ".*' + sujet +'.*") ')
+            return ('?x <http://dbpedia.org/ontology/formerBandMember> ?formerBandMember', 'FILTER regex(?formerBandMember, ".*' + sujet +'.*") ')
         return ""
