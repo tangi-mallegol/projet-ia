@@ -49,6 +49,13 @@
         <script>
             var input = $("input[name='question']");
             var feed = $(".feed");
+            var createGUID = function() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+                    return v.toString(16);
+                });
+            }
+            var uuid = createGUID();
             input.on('keypress', function(e){
                 if(e.keyCode == 13){
                     var question = input.val();
@@ -57,7 +64,8 @@
                     $.ajax({
                         url : "/question",
                         data : {
-                            question : question
+                            question : question,
+                            uuid: uuid
                         },
                         type : "GET",
                         success : function(data){

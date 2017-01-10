@@ -17,22 +17,20 @@ sentences = [
     "What album did Pink Floyd produce ?"
 ]
 sparql_base_req = {
-    'who' : {
-        'member' : "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}",
-        'default' : "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
+    'who': {
+        'member': "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}",
+        'default':  "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
     },
-    'where' : {
-        'born' : "select distinct ?born where {?x dbpedia:placeOfBirth ?born . ?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}",
-        'live' : "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
+    'where': {
+        'born':  "select distinct ?born where {?x dbpedia:placeOfBirth ?born . ?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}",
+        'live': "select distinct ?name where {?x dbpedia-owl:%s ?name FILTER (regex(?name, '.*%s.*','i'))}"
     },
-    'what' : {
-        'album' : "select distinct ?album, ?albumName where { ?album a dbpedia-owl:Album . ?album rdfs:label ?albumName . ?album dbpedia-owl:artist dbpedia:%s. filter (lang(?albumName) = '' || langMatches(lang(?albumName), 'en'))}"
+    'what': {
+        'album': "select distinct ?album, ?albumName where { ?album a dbpedia-owl:Album . ?album rdfs:label ?albumName . ?album dbpedia-owl:artist dbpedia:%s. filter (lang(?albumName) = '' || langMatches(lang(?albumName), 'en'))}"
     }
 }
 
 sparql_base_req['abstract'] = "select distinct ?data where {<%s> dbpedia-owl:abstract ?data filter (lang(?data) = '' || langMatches(lang(?data), 'en'))}"
-
-#dg = nltk.parse.parse_one(tokens)
 
 import_request = """
     PREFIX dbo: <http://dbpedia.org/ontology/>
@@ -42,29 +40,32 @@ import_request = """
     PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
     PREFIX dbpprop: <http://dbpedia.org/property/>"""
 
-def build_client_res(question):
+SUBJECT_CONTEXT = {}
+def build_client_res(uuid, question):
     tokens = nltk.word_tokenize(question)
     tagged = nltk.pos_tag(tokens)
     print tagged
+    print uuid
+
     if get_WP(tagged).lower() == "who":
         if get_subject(tagged) in sparql_base_req['who']:
 
-            query = sparql_base_req['who']['member'] % ('associatedBand', get_object(tagged))
-            return "Sorry, I don't know '" + get_object(tagged).replace(".*", " ") + "'."
+            query = sparql_base_req['who']['member'] % ('associatedBand', get_object(uuid, tagged))
+            return "Sorry, I don't know '" + get_object(uuid, tagged).replace(".*", " ") + "'."
 
-        else :
+        else:
 
-            query = sparql_base_req['who']['default'] % ('associatedBand', get_object(tagged))
+            query = sparql_base_req['who']['default'] % ('associatedBand', get_object(uuid, tagged))
             results = send_sparql_query(query)
 
             print results
 
             if len(results) == 0:
-                query = sparql_base_req['who']['default'] % ('musicalArtist', get_object(tagged))
+                query = sparql_base_req['who']['default'] % ('musicalArtist', get_object(uuid, tagged))
                 results = send_sparql_query(query)
 
             if len(results) == 0:
-                query = sparql_base_req['who']['default'] % ('person', get_object(tagged))
+                query = sparql_base_req['who']['default'] % ('person', get_object(uuid, tagged))
                 results = send_sparql_query(query)
 
 
@@ -76,13 +77,14 @@ def build_client_res(question):
                 #abstract = re.sub(r'[.*]', '', abstract)
                 info = '<a href="https://en.wikipedia.org/wiki/%s" target="_blank">More informations.</a>' % name
                 return abstract + info
-            return "Sorry, I don't know '" + get_object(tagged).replace(".*", " ") + "'."
-    
+            return "Sorry, I don't know '" + get_object(uuid, tagged).replace(".*", " ") + "'."
+
     if get_WP(tagged).lower() == "what":
-        
+
         # On trouve le groupe
         subject = get_subject(tagged)
-        object = get_object(tagged)
+        print subject
+        object = get_object(uuid, tagged)
         print subject, object
         query = sparql_base_req['who']['default'] % ('associatedBand', object)
         results = send_sparql_query(query)
@@ -94,7 +96,7 @@ def build_client_res(question):
         if len(results) == 0:
             query = sparql_base_req['who']['default'] % ('person', object)
             results = send_sparql_query(query)
-            
+
         print results[0]['name']['value']
         name_object = results[0]['name']['value'].split('/')[-1]
         print name_object, 'lel', subject, object
@@ -116,18 +118,18 @@ def build_client_res(question):
 
 
     # if get_WP(tagged).lower() == "where":
-    #     query = sparql_base_req['where'] % ('associatedBand', get_object(tagged))
+    #     query = sparql_base_req['where'] % ('associatedBand', get_object(uuid, tagged))
 
     #     results = send_sparql_query(query)
 
     #     print results
 
     #     if len(results) == 0:
-    #         query = sparql_base_req['who'] % ('musicalArtist', get_object(tagged))
+    #         query = sparql_base_req['who'] % ('musicalArtist', get_object(uuid, tagged))
     #         results = send_sparql_query(query)
 
     #     if len(results) == 0:
-    #         query = sparql_base_req['who'] % ('person', get_object(tagged))
+    #         query = sparql_base_req['who'] % ('person', get_object(uuid, tagged))
     #         results = send_sparql_query(query)
 
 
@@ -139,7 +141,7 @@ def build_client_res(question):
     #         #abstract = re.sub(r'[.*]', '', abstract)
     #         info = '<a href="https://en.wikipedia.org/wiki/%s" target="_blank">More informations.</a>' % name
     #         return abstract + info
-    #     return "Sorry, I don't know '" + get_object(tagged).replace(".*", " ") + "'."
+    #     return "Sorry, I don't know '" + get_object(uuid, tagged).replace(".*", " ") + "'."
 
 
 def get_tagged_word(tag, tagged_word):
@@ -160,8 +162,15 @@ def get_subject(tagged_word):
 def get_verb(tagged_word):
     return get_tagged_word("VB", tagged_word)
 
-def get_object(tagged_word):
-    return get_tagged_word("NNP", tagged_word)
+def get_object(uuid, tagged_word):
+    res = get_tagged_word("NNP", tagged_word)
+    if res == "":
+        if uuid in SUBJECT_CONTEXT:
+            res = SUBJECT_CONTEXT[uuid]
+    else:
+        SUBJECT_CONTEXT[uuid] = res
+
+    return res
 
 def send_sparql_query(query):
     sparql = SPARQLWrapper("http://dbpedia.org/sparql")
@@ -182,9 +191,9 @@ if __name__ == '__main__':
 
 """
 for element in tagged:
-    
+
     if element[1] == "NNP":
-        
+
         subject = element[0]
         print subject
 
@@ -201,7 +210,7 @@ sparql.setQuery("
     PREFIX dbpedia2: <http://dbpedia.org/property/>
     PREFIX dbpedia: <http://dbpedia.org/>
     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-    
+
 
     SELECT *
     WHERE { <http://dbpedia.org/resource/"+ subject+ "> ?r ?p }
@@ -210,13 +219,11 @@ sparql.setReturnFormat(JSON)
 results = sparql.query().convert()
 
 for result in results["results"]["bindings"]:
-    
+
     print result
-    
+
     #if result["r"]["value"] == "http://dbpedia.org/ontology/wikiPageRedirects":
-        
+
         #print(result["p"]["value"])
 
 """
-
-
